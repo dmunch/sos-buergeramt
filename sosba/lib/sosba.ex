@@ -1,0 +1,2 @@
+defmodule Sosba do
+end
