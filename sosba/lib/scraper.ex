@@ -5,11 +5,18 @@ defmodule Scraper do
   def load_base do 
     load(@url)
   end
+  
+  def load(url, cache_control) do
+    #we add an additional query parameter so that we're sure to bypass the varnish cache 
+    load(url <> "&cc=#{cache_control}")
   end
   
   def load(url) do 
-    resp = HTTPoison.get! url
-    resp.body 
+    #brute force, in case of any error we just retry until we succeed
+    case HTTPoison.get url do
+      {:ok, resp} -> resp.body
+      _ -> load(url)
+    end
   end
 
   def parse(html) do  
@@ -48,16 +55,16 @@ defmodule Scraper do
     end
   end
 
-  def parse_and_follow(url) do
-    html = load(url)
+  def parse_and_follow(url, cache_control) do
+    html = load(url, cache_control)
     months = parse(html)
     case parse_next_month_url(html) do
-      {:ok, url} -> (months ++ parse_and_follow(url)) |> Enum.uniq_by(fn a -> a.month end)
+      {:ok, url} -> (months ++ parse_and_follow(url, cache_control)) |> Enum.uniq_by(fn a -> a.month end)
       {:none} -> months
     end
   end
   
   def run do
+    parse_and_follow(@url, :os.system_time())
   end
-
 end
