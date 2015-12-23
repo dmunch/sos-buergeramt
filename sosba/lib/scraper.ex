@@ -108,16 +108,26 @@ defmodule Scraper do
   def run do
     cache_control = :os.system_time()
     
-    dates1 = load_for_date({2015, 12, 1}, cache_control) |> parse_two_months
-    dates2 = load_for_date({2016,  2, 1}, cache_control) |> parse_two_months
+    #dates1 = load_for_date({2015, 12, 1}, cache_control) |> parse_two_months
+    dates2 = load_for_date({2016,  1, 1}, cache_control) |> parse_two_months
     
-    dates = (dates1 ++ dates2) |> List.flatten
+    #dates = (dates1 ++ dates2) |> List.flatten
+    dates = dates2 |> List.flatten
     
     cookie = get_auth_cookie
     
     dates |> inspect |> IO.puts
 
     dates
-    |> Enum.map(fn d -> load(@base_url <> d.url, cache_control, cookie) end)
+    |> Enum.map(fn d -> %{date: d.date, html: load(@base_url <> d.url, cache_control, cookie)} end)
+    |> Enum.map(fn d ->
+      {year, month, day} = d.date
+      file_name = "#{day}-#{month}-#{year}.html"
+      {:ok, file} = File.open file_name, [:write]
+      IO.binwrite file, d.html
+      File.close file 
+      
+      file_name
+    end)
   end
 end
