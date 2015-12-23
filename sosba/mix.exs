@@ -14,7 +14,7 @@ defmodule Sosba.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :httpoison, :floki]]
+    [applications: [:logger, :httpoison, :floki, :timex]]
   end
 
   # Dependencies can be Hex packages:
@@ -29,7 +29,8 @@ defmodule Sosba.Mixfile do
   defp deps do
     [
        {:floki, "~> 0.7"},
-       {:httpoison, "~> 0.8.0"}
+       {:httpoison, "~> 0.8.0"},
+       {:timex, github: "bitwalker/timex"}
     ]
   end
 end

@@ -1,8 +1,12 @@
 %{"certifi": {:hex, :certifi, "0.3.0"},
+  "combine": {:hex, :combine, "0.6.0"},
   "floki": {:hex, :floki, "0.7.1"},
   "hackney": {:hex, :hackney, "1.4.7"},
   "httpoison": {:hex, :httpoison, "0.8.0"},
   "idna": {:hex, :idna, "1.0.2"},
   "mimerl": {:hex, :mimerl, "1.0.2"},
   "mochiweb": {:hex, :mochiweb, "2.12.2"},
-  "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"}}
+  "pipe": {:git, "https://github.com/batate/elixir-pipes.git", "eba4a47c689e473b425ef59f92a51dc3b3f28f85", []},
+  "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
+  "timex": {:git, "https://github.com/bitwalker/timex.git", "b7994ee40da2e5a45958934d301a474effef145b", []},
+  "tzdata": {:hex, :tzdata, "0.5.5"}}
