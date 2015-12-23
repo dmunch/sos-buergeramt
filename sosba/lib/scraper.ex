@@ -26,10 +26,19 @@ defmodule Scraper do
   end
 
   def get_auth_cookie do
-    #HTTPoison.get! "https://service.berlin.de/terminvereinbarung/termin/blank.png"
-    #|> (fn r -> r.headers end).()
-    #|> Enum.find(fn h -> {key, _} = h; key == "Set-Cookie" end)
+    cookie = (HTTPoison.get! "https://service.berlin.de/terminvereinbarung/termin/blank.png")
+    |>(fn r -> r.headers end).()
+    |> Enum.find(fn h -> {key, _} = h; key == "Set-Cookie" end)
     #should result in {"Set-Cookie", "ZMS-BO_Webinterface=r0t8hqq74d0ck80pca6lsvadk0; path=/"}
+    
+    #match and extract the cookie value
+    {key, value} = cookie
+    value
+    |> String.split(";")
+    |> hd 
+    |> String.split("=")
+    |> tl   
+    
     #and can be used like follows:
     #HTTPoison.get url , %{}, hackney: [cookie: [{"ZMS-BO_Webinterface", "88880a0dio4qdiqv54u8tj1004"}]]
   end
