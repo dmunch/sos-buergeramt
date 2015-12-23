@@ -43,27 +43,50 @@ defmodule Scraper do
     #HTTPoison.get url , %{}, hackney: [cookie: [{"ZMS-BO_Webinterface", "88880a0dio4qdiqv54u8tj1004"}]]
   end
 
-  def parse(html) do  
+  def parse_two_months(html) do  
     html
     |> Floki.find(".calendar-month-table") 
     |> Enum.map(&parse_month_table/1)
   end
 
+  def parse_german_month_year(month_year_list) do
+    {month, year} = case month_year_list do
+      ["Januar", year] -> {1, year}
+      ["Februar", year] -> {2, year}
+      ["März", year] -> {3, year}
+      ["April", year] -> {4, year}
+      ["Mai", year] -> {5, year}
+      ["Juni", year] -> {6, year}
+      ["Juli", year] -> {7, year}
+      ["August", year] -> {8, year}
+      ["September", year] -> {9, year}
+      ["Oktober", year] -> {10, year}
+      ["November", year] -> {11, year}
+      ["Dezember", year] -> {12, year}
+    end
+
+    {year, _} = Integer.parse(year)
+    {month, year}
+  end
+
   def parse_month_table(month_table) do
-    month = month_table 
+    {month, year} = month_table 
     |> Floki.find(".month")
     |> Floki.text
+    |> String.strip
+    |> String.split(" ")
+    |> parse_german_month_year
+
 
     bookable = month_table 
     |> Floki.find(".buchbar")
-    |> Enum.map(fn td -> %{day: Floki.text(td), url: Floki.find(td, "a") |> Floki.attribute("href")} end)
+    |> Enum.map(fn td -> 
+          {day, _} = td |> Floki.text |> Integer.parse
+          %{date: {year, month, day}, url: Floki.find(td, "a") |> Floki.attribute("href")} 
+        end
+      )
 
-    unbookable = month_table 
-    |> Floki.find(".nichtbuchbar")
-    |> Enum.map(&Floki.text/1)
-
-    #%{month: month, bookable: bookable, unbookable: unbookable}
-    %{month: month, bookable: bookable}
+    bookable
   end
 
   def parse_next_month_url(html) do
@@ -81,9 +104,9 @@ defmodule Scraper do
 
   def parse_and_follow(url, cache_control) do
     html = load(url, cache_control)
-    months = parse(html)
+    months = parse_two_months(html)
     case parse_next_month_url(html) do
-      {:ok, url} -> (months ++ parse_and_follow(url, cache_control)) |> Enum.uniq_by(fn a -> a.month end)
+      {:ok, url} -> (months ++ parse_and_follow(url, cache_control)) |> List.flatten |> Enum.uniq_by(fn a -> a.date end)
       {:none} -> months
     end
   end
