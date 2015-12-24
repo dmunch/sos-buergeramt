@@ -130,4 +130,35 @@ defmodule Scraper do
       file_name
     end)
   end
+
+  def parse_timetable(html) do
+    html
+    |> Floki.find(".timetable tr")
+    |> Enum.map fn row ->
+      time = row 
+            |> Floki.find(".buchbar") 
+            |> Floki.text
+      
+      offices = row 
+                |> Floki.find("a") 
+                |> Enum.map fn of -> 
+                  url = of |> Floki.attribute("href") |> hd
+                  %{
+                    time: time,
+                    oid: url |> parse_oid,
+                    anliegen: url |> parse_anliegen,
+                    #url: url, 
+                    name: of |> Floki.text
+                  }
+                end
+    end
+  end
+
+  def parse_oid(url) do url |> parse_query_string("OID") end
+  def parse_anliegen(url) do url |> parse_query_string("anliegen[]") end
+  def parse_query_string(url, field) do
+    url
+    |> URI.decode_query 
+    |> (fn map -> map[field] end).() 
+  end
 end
