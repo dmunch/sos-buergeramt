@@ -104,28 +104,45 @@ defmodule Scraper do
 
   def run do
     cache_control = :os.system_time()
-    
-    #dates1 = load_for_date({2015, 12, 1}, cache_control) |> parse_two_months
-    dates2 = load_for_date({2016,  1, 1}, cache_control) |> parse_two_months
-    
-    #dates = (dates1 ++ dates2) |> List.flatten
-    dates = dates2 |> List.flatten
-    
-    cookie = get_auth_cookie
-    
-    dates |> inspect |> IO.puts
+    Date.now |> DateFormat.format("{YYYY}-{M}-{D}-{h24}-{m}-{s}")
 
-    dates
-    |> Enum.map(fn d -> %{date: d.date, html: load(@base_url <> d.url, cache_control, cookie)} end)
-    |> Enum.map(fn d ->
-      {year, month, day} = d.date
-      file_name = "#{day}-#{month}-#{year}.html"
-      {:ok, file} = File.open file_name, [:write]
-      IO.binwrite file, d.html
-      File.close file 
-      
-      file_name
-    end)
+    dates = [
+      {2015, 12, 1},
+      {2016,  2, 1}
+    ]
+    |> Enum.map(&Task.async(fn -> load_for_date(&1, cache_control) end))
+    |> Enum.map(&Task.await(&1, 20000))
+    |> Enum.map(&parse_two_months/1)
+    |> Enum.reduce([], fn(x, acc) -> acc ++ x end)
+    |> List.flatten
+    
+    
+    #dates |> inspect |> IO.puts
+
+    cookie = get_auth_cookie
+    process_timetable = fn(date) -> 
+      #cookie = get_auth_cookie
+      load(@base_url <> date.url, cache_control, cookie)
+      |> save_timetable(date)
+      |> parse_timetable
+    end
+
+    dates 
+    |> Enum.map(fn date -> Task.async(fn -> process_timetable.(date) end) end) 
+    |> Enum.map(&Task.await(&1, 80000))
+    |> Enum.map(&inspect/1)
+    |> Enum.map(&IO.puts/1)
+  end
+
+  def save_timetable(html, date) do
+    {year, month, day} = date.date
+    file_name = "#{day}-#{month}-#{year}.html"
+    {:ok, file} = File.open file_name, [:write]
+    IO.binwrite file, html
+    File.close file 
+    
+    IO.puts file_name
+    html
   end
 
   def parse_timetable(html) do
