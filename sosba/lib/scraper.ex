@@ -125,13 +125,21 @@ defmodule Scraper do
       load(@base_url <> date.url, cache_control, cookie)
       |> save_timetable(date)
       |> parse_timetable
+      |> List.flatten
+      |> Enum.map(&Dict.put(&1, :date, date.date))
     end
 
-    dates 
+    appointements = dates 
     |> Enum.map(fn date -> Task.async(fn -> process_timetable.(date) end) end) 
     |> Enum.map(&Task.await(&1, 80000))
+    |> List.flatten
+
+    appointements
     |> Enum.map(&inspect/1)
     |> Enum.map(&IO.puts/1)
+
+    File.write! "appointements.bin", :erlang.term_to_binary(appointements)
+    appointements
   end
 
   def save_timetable(html, date) do
@@ -149,27 +157,24 @@ defmodule Scraper do
     html
     |> Floki.find(".timetable tr")
     |> Enum.map fn row ->
-      time = row 
-            |> Floki.find(".buchbar") 
-            |> Floki.text
-      
-      offices = row 
-                |> Floki.find("a") 
-                |> Enum.map fn of -> 
-                  url = of |> Floki.attribute("href") |> hd
-                  %{
-                    time: time,
-                    oid: url |> parse_oid,
-                    anliegen: url |> parse_anliegen,
-                    #url: url, 
-                    name: of |> Floki.text
-                  }
-                end
+      row 
+          |> Floki.find("a") 
+          |> Enum.map fn of -> 
+            url = of |> Floki.attribute("href") |> hd
+            %{
+              time: url |> parse_zeit,
+              oid: url |> parse_oid,
+              anliegen: url |> parse_anliegen,
+              #url: url, 
+              name: of |> Floki.text
+            }
+          end
     end
   end
 
   def parse_oid(url) do url |> parse_query_string("OID") end
   def parse_anliegen(url) do url |> parse_query_string("anliegen[]") end
+  def parse_zeit(url) do url |> parse_query_string("zeit") end
   def parse_query_string(url, field) do
     url
     |> URI.decode_query 
