@@ -16,33 +16,33 @@ defmodule Scraper do
     load(url, cache_control)
   end
 
-  def load(url, cache_control, cookie) do
-    #we add an additional query parameter so that we're sure to bypass the varnish cache 
-    url = url <> "&cc=#{cache_control}"
+  def load(url, cache_control \\ "", cookie \\ "") do 
+    load_response(url, cache_control, cookie).body
+  end
+
+  def load_response(url, cache_control \\ "", cookie \\ "") do 
+    options = [proxy: "localhost:8118", recv_timeout: 80000, timeout: 80000]
+
+    #we optionally add an additional query parameter so that we're sure to bypass the varnish cache 
+    case cache_control do
+      "" -> url = url
+      _ -> url = url <> "&cc=#{cache_control}" 
+    end
+    case cookie do
+      "" -> options = options 
+      _ -> options = options ++ [hackney: [cookie: [{"ZMS-BO_Webinterface", cookie}]]]
+    end
     
     #brute force, in case of any error we just retry until we succeed
-    case HTTPoison.get url, %{}, hackney: [cookie: [{"ZMS-BO_Webinterface", cookie}]]
-    do
-      {:ok, resp} -> resp.body
-      _ -> load(url, cache_control, cookie)
-    end
-  end
-  
-  def load(url, cache_control) do
-    #we add an additional query parameter so that we're sure to bypass the varnish cache 
-    load(url <> "&cc=#{cache_control}")
-  end
-  
-  def load(url) do 
-    #brute force, in case of any error we just retry until we succeed
-    case HTTPoison.get url do
-      {:ok, resp} -> resp.body
-      _ -> load(url)
+    case HTTPoison.get url, %{}, options do
+      {:ok, resp} -> resp
+      _ -> load_response(url, cache_control, cookie)
     end
   end
 
   def get_auth_cookie do
-    cookie = (HTTPoison.get! "https://service.berlin.de/terminvereinbarung/termin/blank.png")
+    url = "https://service.berlin.de/terminvereinbarung/termin/blank.png"
+    cookie = load_response(url) 
     |>(fn r -> r.headers end).()
     |> Enum.find(fn h -> {key, _} = h; key == "Set-Cookie" end)
     #should result in {"Set-Cookie", "ZMS-BO_Webinterface=r0t8hqq74d0ck80pca6lsvadk0; path=/"}
@@ -54,9 +54,6 @@ defmodule Scraper do
     |> hd 
     |> String.split("=")
     |> tl   
-    
-    #and can be used like follows:
-    #HTTPoison.get url , %{}, hackney: [cookie: [{"ZMS-BO_Webinterface", "88880a0dio4qdiqv54u8tj1004"}]]
   end
 
   def parse_two_months(html) do  
