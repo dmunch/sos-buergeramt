@@ -1,3 +1,9 @@
+require Amnesia
+require Database
+
+use Amnesia
+use Database
+
 defmodule Sosba do
   use Application
 
@@ -7,7 +13,7 @@ defmodule Sosba do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(Periodicially, [])
+      worker(Periodically, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
@@ -15,6 +21,12 @@ defmodule Sosba do
     opts = [strategy: :one_for_one, name: Sosba.Supervisor]
     svReturn = Supervisor.start_link(children, opts)
 
+    #init database
+    Amnesia.start
+    Database.create(ram: [node])
+    Database.wait
+    Amnesia.transaction do: User.create("hans", "a", "bbb")
+    
     #start expects us to return this value
     svReturn
   end
