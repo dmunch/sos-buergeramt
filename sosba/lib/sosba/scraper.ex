@@ -136,9 +136,9 @@ defmodule Scraper do
     |> Enum.map(&Task.await(&1, 80000))
     |> List.flatten
 
-    appointements
-    |> Enum.map(&inspect/1)
-    |> Enum.map(&IO.puts/1)
+    #appointements
+    #|> Enum.map(&inspect/1)
+    #|> Enum.map(&IO.puts/1)
 
     File.write! "appointements.bin", :erlang.term_to_binary(appointements)
     appointements
