@@ -116,7 +116,6 @@ defmodule Scraper do
 
   def run do
     cache_control = :os.system_time()
-    Date.now |> DateFormat.format("{YYYY}-{M}-{D}-{h24}-{m}-{s}")
 
     dates = [
       {2016, 1, 1},
@@ -158,8 +157,12 @@ defmodule Scraper do
     #|> Enum.map(&inspect/1)
     #|> Enum.map(&IO.puts/1)
 
-    File.write! "appointements.bin", :erlang.term_to_binary(appointements)
-    appointements
+    timeStamp = Date.now |> DateFormat.format!("{YYYY}-{M}-{D}-{h24}-{m}-{s}")
+    fileName = "data/appointements-" <> timeStamp <> ".bin"
+    
+    withoutUrl = appointements |> Enum.map(&Dict.delete(&1, :url))
+    File.write! fileName, :erlang.term_to_binary(withoutUrl)
+    withoutUrl
   end
 
   def save_timetable(html, date) do
