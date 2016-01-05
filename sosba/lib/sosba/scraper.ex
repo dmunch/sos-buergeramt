@@ -140,7 +140,7 @@ defmodule Scraper do
 
     cookie = get_auth_cookie
     process_timetable = fn(date) -> 
-      cookie = get_auth_cookie
+    #cookie = get_auth_cookie
       load(@base_url <> date.url, cache_control, cookie)
       |> save_timetable(date)
       |> parse_timetable
