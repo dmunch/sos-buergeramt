@@ -32,8 +32,9 @@ defmodule Sosba.Mixfile do
        {:floki, "~> 0.7"},
        {:httpoison, "~> 0.8.0"},
        {:timex, github: "bitwalker/timex"},
-       {:amnesia, "~> 0.2.0"},
-       {:maru, "~> 0.9.0"}
-    ]
+       {:amnesia, github: "meh/amnesia"},
+       {:maru, "~> 0.9.0"},
+       {:tzdata, "== 0.1.8", override: true}
+     ]
   end
 end

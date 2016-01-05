@@ -1,13 +1,13 @@
-%{"amnesia": {:hex, :amnesia, "0.2.0"},
+%{"amnesia": {:git, "https://github.com/meh/amnesia.git", "d0524ae81e07eb94d56e8a34540420b13178df09", []},
   "certifi": {:hex, :certifi, "0.3.0"},
   "combine": {:hex, :combine, "0.6.0"},
   "cowboy": {:hex, :cowboy, "1.0.4"},
   "cowlib": {:hex, :cowlib, "1.0.2"},
   "exquisite": {:hex, :exquisite, "0.1.5"},
   "floki": {:hex, :floki, "0.7.1"},
-  "hackney": {:hex, :hackney, "1.4.7"},
+  "hackney": {:hex, :hackney, "1.4.8"},
   "httpoison": {:hex, :httpoison, "0.8.0"},
-  "idna": {:hex, :idna, "1.0.2"},
+  "idna": {:hex, :idna, "1.0.3"},
   "maru": {:hex, :maru, "0.9.0"},
   "mimerl": {:hex, :mimerl, "1.0.2"},
   "mochiweb": {:hex, :mochiweb, "2.12.2"},
@@ -17,4 +17,4 @@
   "ranch": {:hex, :ranch, "1.2.0"},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
   "timex": {:git, "https://github.com/bitwalker/timex.git", "b7994ee40da2e5a45958934d301a474effef145b", []},
-  "tzdata": {:hex, :tzdata, "0.5.5"}}
+  "tzdata": {:hex, :tzdata, "0.1.8"}}
