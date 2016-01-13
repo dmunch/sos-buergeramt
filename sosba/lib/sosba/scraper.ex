@@ -33,7 +33,7 @@ defmodule Scraper do
   end
 
   def load_response(url, cache_control \\ "", cookie \\ "") do 
-    options = [proxy: "localhost:8118", recv_timeout: 80000, timeout: 80000]
+    options = [proxy: Application.get_env(:sosba, :proxy), recv_timeout: 80000, timeout: 80000]
 
     #we optionally add an additional query parameter so that we're sure to bypass the varnish cache 
     case cache_control do
